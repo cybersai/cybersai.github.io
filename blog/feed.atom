@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <title>Isaac Sai</title>
+    <link href="https://cybersai.github.io" />
+    <link type="application/atom+xml" rel="self" href="https://cybersai.github.io/blog/feed.atom" />
+    <updated>2020-05-11T15:20:17+00:00</updated>
+    <id>https://cybersai.github.io/blog/feed.atom</id>
+    <author>
+        <name>Isaac Sai</name>
+    </author>
+                <entry>
+    <id>https://cybersai.github.io/blog/welcome</id>
+    <link type="text/html" rel="alternate" href="https://cybersai.github.io/blog/welcome" />
+    <title>Welcome</title>
+    <published>2020-05-11T00:00:00+00:00</published>
+    <updated>2020-05-11T00:00:00+00:00</updated>
+    <author>
+        <name>Isaac Sai</name>
+    </author>
+    <summary type="html">I want to welcome you to my blog post. I plan to post things and experiences
+get while building applications. Although you may learn one or two things,
+I personally believe I owe myself this and not anyone else.
+
+In case you have question concerning any......</summary>
+    <content type="html"><![CDATA[
+        <p>I want to welcome you to my blog post. I plan to post things and experiences
+get while building applications. Although you may learn one or two things,
+I personally believe I owe myself this and not anyone else.</p>
+
+<p>In case you have question concerning any post or want to make inquires, you can
+reach out to me at isaacsai030@gmail.com.</p>
+
+<p>See ya soon.</p>
+    ]]></content>
+</entry>
+    </feed>
