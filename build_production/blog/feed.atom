@@ -3,12 +3,118 @@
     <title>Isaac Sai</title>
     <link href="https://cybersai.github.io" />
     <link type="application/atom+xml" rel="self" href="https://cybersai.github.io/blog/feed.atom" />
-    <updated>2020-05-11T15:20:17+00:00</updated>
+    <updated>2020-05-13T12:32:01+00:00</updated>
     <id>https://cybersai.github.io/blog/feed.atom</id>
     <author>
         <name>Isaac Sai</name>
     </author>
                 <entry>
+    <id>https://cybersai.github.io/blog/xml_api</id>
+    <link type="text/html" rel="alternate" href="https://cybersai.github.io/blog/xml_api" />
+    <title>Working with XML API</title>
+    <published>2020-05-13T00:00:00+00:00</published>
+    <updated>2020-05-13T00:00:00+00:00</updated>
+    <author>
+        <name>Isaac Sai</name>
+    </author>
+    <summary type="html">When you have to integrate a system with an XML API, things can get very messy.
+This is because most develops are comfortable with JSON APIs.
+Also none of the HTTP clients we love support XML data out of the box.
+After working with a few XML APIs for......</summary>
+    <content type="html"><![CDATA[
+        <p>When you have to integrate a system with an XML API, things can get very messy.
+This is because most develops are comfortable with JSON APIs.
+Also none of the HTTP clients we love support XML data out of the box.
+After working with a few XML APIs for some payment system for clients,
+I found some good tips to make working with XML data fun. Let dive in.</p>
+
+<blockquote>
+  <p>This post assumes you are using Laravel</p>
+</blockquote>
+
+<p>The first thing we need is an Http Client. You may decide to use curl,
+but I prefer not to reinvent the wheels. GuzzleHttp is the best, but it
+very cumbersome to use. There is a library called Zttp which is
+a wrapper around guzzle for common use cases. For Laravel 7, you don't have to
+install anything, other than that you have to install it with the following command.</p>
+
+<pre><code class="language-bash">composer require kitetail/zttp
+</code></pre>
+
+<p>To use we call the static methods like this:</p>
+
+<pre><code class="language-php">// Laravel 7+
+Http::post('https://api.someapp.io', [
+    'name' =&gt; 'Jerry'
+]);
+
+// Laravel 6 and below
+Zttp::post('https://api.someapp.io', [
+    'name' =&gt; 'Jerry'
+]);
+</code></pre>
+
+<blockquote>
+  <p>Use Zttp or Http were applies to you. From here onwards, we will be using Zttp.
+  To use this library to send XML data do the following.</p>
+</blockquote>
+
+<pre><code class="language-php">Zttp::send('POST', 'https://api.someapp.io', [
+    'body' =&gt; "&lt;?xml version="1.0"?&gt;&lt;note&gt;&lt;to&gt;$name&lt;/to&gt;&lt;from&gt;$user&lt;/from&gt;&lt;heading&gt;$heading&lt;/heading&gt;&lt;body&gt;Don't forget me this weekend!&lt;/body&gt;&lt;/note&gt;"
+]);
+</code></pre>
+
+<p>When the XML data is much longer, it will not look good You can use heredocs string to make it better.</p>
+
+<pre><code class="language-php">Zttp::send('POST', 'https://api.someapp.io', [
+    'body' =&gt; &lt;&lt;&lt;BODY
+&lt;?xml version="1.0"?&gt;
+&lt;note&gt;
+    &lt;to&gt;$name&lt;/to&gt;
+    &lt;from&gt;$user&lt;/from&gt;
+    &lt;heading&gt;$heading&lt;/heading&gt;
+    &lt;body&gt;Don't forget me this weekend!&lt;/body&gt;
+&lt;/note&gt;
+    BODY;
+]);
+</code></pre>
+
+<p>Wow, this looks much better. Yeah, true, but writing your XML data along
+with your code isn't the best. You can separate them to get clean code.
+Create a file where you put the XML template inside. The extension of the
+file can be .stub</p>
+
+<pre><code class="language-xml">&lt;!-- xml_data.stub --&gt;
+&lt;?xml version="1.0"?&gt;
+&lt;note&gt;
+    &lt;to&gt;[name]&lt;/to&gt;
+    &lt;from&gt;[user]&lt;/from&gt;
+    &lt;heading&gt;[heading]&lt;/heading&gt;
+    &lt;body&gt;Don't forget me this weekend!&lt;/body&gt;
+&lt;/note&gt;
+</code></pre>
+
+<p>The <code>[name]</code>, <code>[user]</code>, etc are placeholders to substitute the real data.</p>
+
+<p>In your PHP code, the code becomes as such.</p>
+
+<pre><code class="language-php">Zttp::send('POST', 'https://api.someapp.io', [
+    'body' =&gt; preg_replace_array(
+        [ '/\[name\]/', '/\[user\]/', '/\[heading\]/', ],
+        [ $name, $user, $heading, ],
+        file_get_contents(__DIR__.'/xml_data.stub')
+    )
+]);
+</code></pre>
+
+<p>For this, no matter how bulky the XML data is, you have the privilege of
+specifying how it should look and you just swap the placeholders with real
+data before sending it.</p>
+
+<p>Hope you found this post helpful, see ya soon.</p>
+    ]]></content>
+</entry>
+            <entry>
     <id>https://cybersai.github.io/blog/welcome</id>
     <link type="text/html" rel="alternate" href="https://cybersai.github.io/blog/welcome" />
     <title>Welcome</title>
@@ -18,17 +124,17 @@
         <name>Isaac Sai</name>
     </author>
     <summary type="html">I want to welcome you to my blog post. I plan to post things and experiences
-get while building applications. Although you may learn one or two things,
-I personally believe I owe myself this and not anyone else.
+I get while building applications. Although you may learn one or two things,
+I believe I owe myself this and not anyone else.
 
-In case you have question concerning any......</summary>
+In case you have a question concerning any post or......</summary>
     <content type="html"><![CDATA[
         <p>I want to welcome you to my blog post. I plan to post things and experiences
-get while building applications. Although you may learn one or two things,
-I personally believe I owe myself this and not anyone else.</p>
+I get while building applications. Although you may learn one or two things,
+I believe I owe myself this and not anyone else.</p>
 
-<p>In case you have question concerning any post or want to make inquires, you can
-reach out to me at isaacsai030@gmail.com.</p>
+<p>In case you have a question concerning any post or want to make inquires, you
+can reach out to me at isaacsai030@gmail.com.</p>
 
 <p>See ya soon.</p>
     ]]></content>

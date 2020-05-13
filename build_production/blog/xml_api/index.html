@@ -6,21 +6,21 @@
         <meta http-equiv="x-ua-compatible" content="ie=edge">
         <meta name="description" content="Personal blog and website of Isaac Sai">
 
-        <meta property="og:title" content="Laravel | Isaac Sai"/>
+        <meta property="og:title" content="Working with XML API | Isaac Sai"/>
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://cybersai.github.io/blog/categories/laravel"/>
+        <meta property="og:url" content="https://cybersai.github.io/blog/xml_api"/>
         <meta property="og:description" content="Personal blog and website of Isaac Sai" />
 
-        <title>Laravel | Isaac Sai</title>
+        <title>Working with XML API | Isaac Sai</title>
 
         <link rel="home" href="https://cybersai.github.io">
         <link rel="icon" type="image/png" href="/favicon.png">
         <link href="/blog/feed.atom" type="application/atom+xml" rel="alternate" title="Isaac Sai Atom Feed">
 
-            <meta property="og:title" content="Laravel" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://cybersai.github.io/blog/categories/laravel"/>
-    <meta property="og:description" content="All posts that does not a defined category." />
+            <meta property="og:title" content="Working with XML API" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="https://cybersai.github.io/blog/xml_api"/>
+    <meta property="og:description" content="How to send and receive xml data" />
 
                     <!-- Insert analytics code here -->
         
@@ -94,38 +94,121 @@
 </nav>
 
         <main role="main" class="flex-auto w-full container max-w-4xl mx-auto py-16 px-6">
-                <h1>Laravel</h1>
+                        <img src="/assets/img/post-cover-image-xml.png" alt="Working with XML API cover image" class="mb-2">
+    
+    <h1 class="leading-none mb-2">Working with XML API</h1>
 
-    <div class="text-2xl border-b border-blue-200 mb-6 pb-10">
-        <p>These posts are about Laravel.</p>
+    <p class="text-gray-700 text-xl md:mt-0">Isaac Sai  •  May 13, 2020</p>
+
+                        <a
+                href="/blog/categories/laravel"
+                title="View posts in laravel"
+                class="inline-block bg-gray-300 hover:bg-blue-200 leading-loose tracking-wide text-gray-800 uppercase text-xs font-semibold rounded mr-4 px-3 pt-px"
+            >laravel</a>
+            
+    <div class="border-b border-blue-200 mb-10 pb-4" v-pre>
+        <p>When you have to integrate a system with an XML API, things can get very messy.
+This is because most develops are comfortable with JSON APIs.
+Also none of the HTTP clients we love support XML data out of the box.
+After working with a few XML APIs for some payment system for clients,
+I found some good tips to make working with XML data fun. Let dive in.</p>
+
+<blockquote>
+  <p>This post assumes you are using Laravel</p>
+</blockquote>
+
+<p>The first thing we need is an Http Client. You may decide to use curl,
+but I prefer not to reinvent the wheels. GuzzleHttp is the best, but it
+very cumbersome to use. There is a library called Zttp which is
+a wrapper around guzzle for common use cases. For Laravel 7, you don't have to
+install anything, other than that you have to install it with the following command.</p>
+
+<pre><code class="language-bash">composer require kitetail/zttp
+</code></pre>
+
+<p>To use we call the static methods like this:</p>
+
+<pre><code class="language-php">// Laravel 7+
+Http::post('https://api.someapp.io', [
+    'name' =&gt; 'Jerry'
+]);
+
+// Laravel 6 and below
+Zttp::post('https://api.someapp.io', [
+    'name' =&gt; 'Jerry'
+]);
+</code></pre>
+
+<blockquote>
+  <p>Use Zttp or Http were applies to you. From here onwards, we will be using Zttp.
+  To use this library to send XML data do the following.</p>
+</blockquote>
+
+<pre><code class="language-php">Zttp::send('POST', 'https://api.someapp.io', [
+    'body' =&gt; "&lt;?xml version="1.0"?&gt;&lt;note&gt;&lt;to&gt;$name&lt;/to&gt;&lt;from&gt;$user&lt;/from&gt;&lt;heading&gt;$heading&lt;/heading&gt;&lt;body&gt;Don't forget me this weekend!&lt;/body&gt;&lt;/note&gt;"
+]);
+</code></pre>
+
+<p>When the XML data is much longer, it will not look good You can use heredocs string to make it better.</p>
+
+<pre><code class="language-php">Zttp::send('POST', 'https://api.someapp.io', [
+    'body' =&gt; &lt;&lt;&lt;BODY
+&lt;?xml version="1.0"?&gt;
+&lt;note&gt;
+    &lt;to&gt;$name&lt;/to&gt;
+    &lt;from&gt;$user&lt;/from&gt;
+    &lt;heading&gt;$heading&lt;/heading&gt;
+    &lt;body&gt;Don't forget me this weekend!&lt;/body&gt;
+&lt;/note&gt;
+    BODY;
+]);
+</code></pre>
+
+<p>Wow, this looks much better. Yeah, true, but writing your XML data along
+with your code isn't the best. You can separate them to get clean code.
+Create a file where you put the XML template inside. The extension of the
+file can be .stub</p>
+
+<pre><code class="language-xml">&lt;!-- xml_data.stub --&gt;
+&lt;?xml version="1.0"?&gt;
+&lt;note&gt;
+    &lt;to&gt;[name]&lt;/to&gt;
+    &lt;from&gt;[user]&lt;/from&gt;
+    &lt;heading&gt;[heading]&lt;/heading&gt;
+    &lt;body&gt;Don't forget me this weekend!&lt;/body&gt;
+&lt;/note&gt;
+</code></pre>
+
+<p>The <code>[name]</code>, <code>[user]</code>, etc are placeholders to substitute the real data.</p>
+
+<p>In your PHP code, the code becomes as such.</p>
+
+<pre><code class="language-php">Zttp::send('POST', 'https://api.someapp.io', [
+    'body' =&gt; preg_replace_array(
+        [ '/\[name\]/', '/\[user\]/', '/\[heading\]/', ],
+        [ $name, $user, $heading, ],
+        file_get_contents(__DIR__.'/xml_data.stub')
+    )
+]);
+</code></pre>
+
+<p>For this, no matter how bulky the XML data is, you have the privilege of
+specifying how it should look and you just swap the placeholders with real
+data before sending it.</p>
+
+<p>Hope you found this post helpful, see ya soon.</p>
     </div>
 
-            <div class="flex flex-col mb-4">
-    <p class="text-gray-700 font-medium my-2">
-        May 13, 2020
-    </p>
+    <nav class="flex justify-between text-sm md:text-base">
+        <div>
+                            <a href="https://cybersai.github.io/blog/welcome" title="Older Post: Welcome">
+                    &LeftArrow; Welcome
+                </a>
+                    </div>
 
-    <h2 class="text-3xl mt-0">
-        <a
-            href="https://cybersai.github.io/blog/xml_api"
-            title="Read more - Working with XML API"
-            class="text-gray-900 font-extrabold"
-        >Working with XML API</a>
-    </h2>
-
-    <p class="mb-4 mt-0">When you have to integrate a system with an XML API, things can get very messy.
-This is because most develops are comfortable with JSON APIs.
-Also none of the HTTP clients we love support XML data...</p>
-
-    <a
-        href="https://cybersai.github.io/blog/xml_api"
-        title="Read more - Working with XML API"
-        class="uppercase font-semibold tracking-wide mb-2"
-    >Read</a>
-</div>
-
-            
-    
+        <div>
+                    </div>
+    </nav>
         </main>
 
         <footer class="bg-white text-center text-sm mt-12 py-4" role="contentinfo">
